@@ -4,28 +4,30 @@ import gc
 
 import pytest
 
-from registtro import Registry, RegistryEvolver
+from registtro import RegistryProtocol, Registry, RegistryEvolver
 
 
 @pytest.mark.parametrize("cls", (Registry, RegistryEvolver))
-def test_interface(cls):
+def test_protocol(cls):
+    assert issubclass(cls, RegistryProtocol)
+
     class Obj(object):
         pass
 
     obj_a = Obj()
     obj_b = Obj()
-    interface = cls()
+    self = cls()
 
-    interface = interface.update({obj_a: 1})
-    assert interface.query(obj_a) == 1
-    assert interface.get(obj_b) is None
+    self = self.update({obj_a: 1})
+    assert self.query(obj_a) == 1
+    assert self.get(obj_b) is None
 
-    interface = interface.update({obj_b: 2})
-    assert interface.query(obj_a) == 1
-    assert interface.query(obj_b) == 2
+    self = self.update({obj_b: 2})
+    assert self.query(obj_a) == 1
+    assert self.query(obj_b) == 2
 
-    assert len(interface.to_dict()) == 2
-    assert interface.to_dict() == {obj_a: 1, obj_b: 2}
+    assert len(self.to_dict()) == 2
+    assert self.to_dict() == {obj_a: 1, obj_b: 2}
 
 
 def test_registry_garbage_collection():
@@ -159,7 +161,7 @@ def test_deep_copy_and_pickle_evolver(deep_copier):
     obj_b = _Obj("b")
     obj_c = _Obj("c")
     obj_d = _Obj("d")
-    objects = obj_a,
+    objects = (obj_a,)
     evolver = Registry({obj_a: 1, obj_d: 4}).get_evolver().update({obj_b: 2, obj_c: 3})
 
     copied_objects, copied_evolver = deep_copier((objects, evolver))

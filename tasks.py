@@ -26,27 +26,27 @@ def tox(c):
 
 @task
 def mypy(c):
-    c.run("mypy registtro")
+    c.run("mypy registtro.py")
 
 
 @task
 def lint(c):
-    c.run("flake8 registtro --count --select=E9,F63,F7,F82 --show-source --statistics")
-    c.run("flake8 tests --count --select=E9,F63,F7,F82 --show-source --statistics")
+    c.run("flake8 registtro.py --count --select=E9,F63,F7,F82 --show-source --statistics")
+    c.run("flake8 tests_registtro.py --count --select=E9,F63,F7,F82 --show-source --statistics")
     c.run(
-        "flake8 registtro --count --ignore=F403,F401,E203,E731,C901,W503 "
+        "flake8 registtro.py --count --ignore=F403,F401,E203,E731,C901,W503 "
         "--max-line-length=120 --statistics"
     )
     c.run(
-        "flake8 tests --count --ignore=F403,F401,E203,E731,C901,W503 "
+        "flake8 tests_registtro.py --count --ignore=F403,F401,E203,E731,C901,W503 "
         "--max-line-length=120 --statistics"
     )
 
 
 @task
 def black(c):
-    c.run("black registtro --line-length=120")
-    c.run("black tests --line-length=120")
+    c.run("black registtro.py --line-length=120")
+    c.run("black tests_registtro.py --line-length=120")
 
 
 @task

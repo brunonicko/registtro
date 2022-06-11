@@ -1,16 +1,32 @@
 import functools
 import copy
 import weakref
-from typing import Dict, Optional, Mapping, Generic, TypeVar, cast, final
+from typing import Dict, Optional, Mapping, Generic, TypeVar, Protocol, runtime_checkable, cast, final
 
 import pyrsistent
 from pyrsistent.typing import PMap, PMapEvolver
 
-__all__ = ["Registry", "RegistryEvolver"]
+__all__ = ["RegistryProtocol", "Registry", "RegistryEvolver"]
 
 
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
+
+
+@final
+@runtime_checkable
+class RegistryProtocol(Protocol[_KT, _VT]):
+    def update(self, updates: Mapping[_KT, _VT]) -> "RegistryProtocol[_KT, _VT]":
+        ...
+
+    def query(self, key: _KT) -> _VT:
+        ...
+
+    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+        ...
+
+    def to_dict(self) -> Dict[_KT, _VT]:
+        ...
 
 
 @final
@@ -69,6 +85,7 @@ class Registry(Generic[_KT, _VT]):
             weak_updates[weak_key] = entry
         if not weak_updates:
             return self
+
         # Update previous registries.
         previous: Optional[Registry[_KT, _VT]] = self
         while previous is not None:
@@ -102,6 +119,7 @@ class Registry(Generic[_KT, _VT]):
         return RegistryEvolver(self)
 
 
+@final
 class RegistryEvolver(Generic[_KT, _VT]):
 
     __slots__ = ("__weakref__", "__registry", "__updates")
@@ -177,7 +195,7 @@ class RegistryEvolver(Generic[_KT, _VT]):
         return self.__updates
 
 
-def _evolver_reducer(registry: Registry[_KT, _VT], updates: Mapping[_KT, _VT]) -> RegistryEvolver:
+def _evolver_reducer(registry: Registry[_KT, _VT], updates: Mapping[_KT, _VT]) -> RegistryEvolver[_KT, _VT]:
     evolver: RegistryEvolver[_KT, _VT] = RegistryEvolver(registry)
     evolver.update(updates)
     return evolver
