@@ -13,7 +13,7 @@ Registtro
    :target: https://registtro.readthedocs.io/en/stable/
 
 .. image:: https://img.shields.io/github/license/brunonicko/registtro?color=light-green
-   :target: https://github.com/brunonicko/registtro/blob/master/LICENSE
+   :target: https://github.com/brunonicko/registtro/blob/main/LICENSE
 
 .. image:: https://static.pepy.tech/personalized-badge/registtro?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads
    :target: https://pepy.tech/project/registtro
