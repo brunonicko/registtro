@@ -7,25 +7,25 @@ import pytest
 from registtro import Registry, RegistryEvolver
 
 
-@pytest.mark.parametrize("abstract_registry_cls", (Registry, Evolver))
-def test_common(abstract_registry_cls):
+@pytest.mark.parametrize("cls", (Registry, RegistryEvolver))
+def test_interface(cls):
     class Obj(object):
         pass
 
     obj_a = Obj()
     obj_b = Obj()
-    abstract_registry = abstract_registry_cls()
+    interface = cls()
 
-    abstract_registry = abstract_registry.update({obj_a: 1})
-    assert abstract_registry.query(obj_a) == 1
-    assert abstract_registry.get(obj_b) is None
+    interface = interface.update({obj_a: 1})
+    assert interface.query(obj_a) == 1
+    assert interface.get(obj_b) is None
 
-    abstract_registry = abstract_registry.update({obj_b: 2})
-    assert abstract_registry.query(obj_a) == 1
-    assert abstract_registry.query(obj_b) == 2
+    interface = interface.update({obj_b: 2})
+    assert interface.query(obj_a) == 1
+    assert interface.query(obj_b) == 2
 
-    assert len(abstract_registry.to_dict()) == 2
-    assert abstract_registry.to_dict() == {obj_a: 1, obj_b: 2}
+    assert len(interface.to_dict()) == 2
+    assert interface.to_dict() == {obj_a: 1, obj_b: 2}
 
 
 def test_registry_garbage_collection():
@@ -40,21 +40,21 @@ def test_registry_garbage_collection():
     registry_c = registry_b.update({obj_c: 3})
 
     del obj_a
-    collect()
+    gc.collect()
 
     assert registry_a.to_dict() == {}
     assert registry_b.to_dict() == {obj_b: 2}
     assert registry_c.to_dict() == {obj_b: 2, obj_c: 3}
 
     del obj_b
-    collect()
+    gc.collect()
 
     assert registry_a.to_dict() == {}
     assert registry_b.to_dict() == {}
     assert registry_c.to_dict() == {obj_c: 3}
 
     del obj_c
-    collect()
+    gc.collect()
 
     assert registry_a.to_dict() == {}
     assert registry_b.to_dict() == {}
@@ -70,17 +70,17 @@ def test_evolver_garbage_collection():
     obj_c = Obj()
     registry = Registry({obj_a: 1})
 
-    evolver = registry.evolver()
+    evolver = registry.get_evolver()
     evolver.update({obj_b: 2, obj_c: 3})
     assert evolver.is_dirty()
 
     del obj_a, obj_b, obj_c
-    collect()
+    gc.collect()
 
     assert len(evolver.to_dict()) == 2
 
     evolver.commit()
-    collect()
+    gc.collect()
 
     assert not evolver.is_dirty()
     assert not evolver.to_dict()
@@ -95,7 +95,7 @@ def test_registry_evolver_roundtrip():
     obj_c = Obj()
     registry = Registry({obj_a: 1, obj_b: 2})
 
-    evolver = Evolver(registry)
+    evolver = RegistryEvolver(registry)
     assert registry.to_dict() == evolver.to_dict()
 
     evolver.update({obj_c: 3})
@@ -105,7 +105,7 @@ def test_registry_evolver_roundtrip():
     evolver.reset()
     assert registry.to_dict() == evolver.to_dict()
 
-    new_registry = new_evolver.registry()
+    new_registry = new_evolver.get_registry()
     assert new_registry.to_dict() == new_evolver.to_dict()
     assert new_registry.to_dict() == {obj_a: 1, obj_b: 2, obj_c: 3}
 
@@ -160,7 +160,7 @@ def test_deep_copy_and_pickle_evolver(deep_copier):
     obj_c = _Obj("c")
     obj_d = _Obj("d")
     objects = obj_a,
-    evolver = Registry({obj_a: 1, obj_d: 4}).evolver().update({obj_b: 2, obj_c: 3})
+    evolver = Registry({obj_a: 1, obj_d: 4}).get_evolver().update({obj_b: 2, obj_c: 3})
 
     copied_objects, copied_evolver = deep_copier((objects, evolver))
     assert len(copied_evolver.to_dict()) == 3
@@ -184,7 +184,7 @@ def test_shallow_copy_evolver():
         pass
 
     obj_a = Obj()
-    evolver = Registry({obj_a: 1}).evolver()
+    evolver = Registry({obj_a: 1}).get_evolver()
     evolver_copy = copy.copy(evolver)
     evolver_forked = evolver.fork()
 

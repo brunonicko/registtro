@@ -1,34 +1,31 @@
-from typing import Dict, Optional, Mapping, Generic, TypeVar, cast
-from weakref import ReferenceType, WeakSet, ref
-from functools import partial
-from copy import deepcopy
+import functools
+import copy
+import weakref
+from typing import Dict, Optional, Mapping, Generic, TypeVar, cast, final
 
-from basicco import final
-from pyrsistent import pmap
+import pyrsistent
 from pyrsistent.typing import PMap, PMapEvolver
 
-from ._base import Base
-
-__all__ = ["Registry", "Evolver"]
+__all__ = ["Registry", "RegistryEvolver"]
 
 
-KT = TypeVar("KT")
-VT = TypeVar("VT")
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
 
 
 @final
-class Registry(Base, Generic[KT, VT]):
-    __slots__ = ("__previous", "__registries", "__data")
+class Registry(Generic[_KT, _VT]):
+    __slots__ = ("__weakref__", "__previous", "__registries", "__data")
 
-    def __init__(self, initial: Optional[Mapping[KT, VT]] = None) -> None:
-        self.__previous: Optional[ReferenceType[Registry[KT, VT]]] = None
-        self.__registries: WeakSet[Registry[KT, VT]] = WeakSet({self})
-        self.__data = cast(PMapEvolver[ReferenceType[KT], VT], pmap().evolver())
+    def __init__(self, initial: Optional[Mapping[_KT, _VT]] = None) -> None:
+        self.__previous: Optional[weakref.ReferenceType[Registry[_KT, _VT]]] = None
+        self.__registries: weakref.WeakSet[Registry[_KT, _VT]] = weakref.WeakSet({self})
+        self.__data = cast(PMapEvolver[weakref.ReferenceType[_KT], _VT], pyrsistent.pmap().evolver())
         if initial is not None:
             self.__initialize(initial)
 
-    def __contains__(self, key: KT) -> bool:
-        return ref(key) in self.__data.persistent()
+    def __contains__(self, key: _KT) -> bool:
+        return weakref.ref(key) in self.__data.persistent()
 
     def __reduce__(self):
         return type(self), (self.to_dict(),)
@@ -39,43 +36,41 @@ class Registry(Base, Generic[KT, VT]):
         try:
             deep_copy = memo[id(self)]
         except KeyError:
-            deep_copy_args = self.to_dict(), memo
-            deep_copy = memo[id(self)] = Registry(deepcopy(*deep_copy_args))
+            deep_copy = memo[id(self)] = Registry(copy.deepcopy(self.to_dict(), memo))
         return deep_copy
 
     def __copy__(self):
         return self
 
     @staticmethod
-    def __clean(registries: WeakSet[Registry[KT, VT]], weak_key: ReferenceType[KT]) -> None:
+    def __clean(registries: weakref.WeakSet["Registry[_KT, _VT]"], weak_key: weakref.ReferenceType[_KT]) -> None:
         for registry in registries:
             del registry.__data[weak_key]
 
-    def __initialize(self, initial: Mapping[KT, VT]) -> None:
+    def __initialize(self, initial: Mapping[_KT, _VT]) -> None:
         temp_registry = self.update(initial)
         self.__registries = registries = temp_registry.__registries
         registries.clear()
         registries.add(self)
         self.__data = temp_registry.__data
 
-    def update(self, updates: Mapping[KT, VT]) -> Registry[KT, VT]:
+    def update(self, updates: Mapping[_KT, _VT]) -> "Registry[_KT, _VT]":
         if not updates:
             return self
 
         registry = Registry.__new__(Registry)
-        registry.__previous = ref(self)
-        registry.__registries = registries = WeakSet({registry})
+        registry.__previous = weakref.ref(self)
+        registry.__registries = registries = weakref.WeakSet({registry})
 
         # Update weak references.
         weak_updates = {}
         for key, entry in updates.items():
-            weak_key = ref(key, partial(Registry.__clean, registries))
+            weak_key = weakref.ref(key, functools.partial(Registry.__clean, registries))
             weak_updates[weak_key] = entry
         if not weak_updates:
             return self
-
         # Update previous registries.
-        previous: Optional[Registry[KT, VT]] = self
+        previous: Optional[Registry[_KT, _VT]] = self
         while previous is not None:
             previous.__registries.add(registry)
             if previous.__previous is None:
@@ -86,10 +81,16 @@ class Registry(Base, Generic[KT, VT]):
 
         return registry
 
-    def query(self, key: KT) -> VT:
-        return self.__data[ref(key)]
+    def query(self, key: _KT) -> _VT:
+        return self.__data[weakref.ref(key)]
 
-    def to_dict(self) -> Dict[KT, VT]:
+    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+        try:
+            return self.query(key)
+        except KeyError:
+            return fallback
+
+    def to_dict(self) -> Dict[_KT, _VT]:
         to_dict = {}
         for weak_key, data in self.__data.persistent().items():
             key = weak_key()
@@ -97,22 +98,21 @@ class Registry(Base, Generic[KT, VT]):
                 to_dict[key] = data
         return to_dict
 
-    def get_evolver(self) -> Evolver[KT, VT]:
-        return Evolver(self)
+    def get_evolver(self) -> "RegistryEvolver[_KT, _VT]":
+        return RegistryEvolver(self)
 
 
-@final
-class Evolver(Base, Generic[KT, VT]):
+class RegistryEvolver(Generic[_KT, _VT]):
 
-    __slots__ = ("__registry", "__updates")
+    __slots__ = ("__weakref__", "__registry", "__updates")
 
     def __init__(self, registry: Optional[Registry] = None) -> None:
         if registry is None:
             registry = Registry()
-        self.__registry: Registry[KT, VT] = registry
-        self.__updates: PMap[KT, VT] = pmap()
+        self.__registry: Registry[_KT, _VT] = registry
+        self.__updates: PMap[_KT, _VT] = pyrsistent.pmap()
 
-    def __contains__(self, key: KT) -> bool:
+    def __contains__(self, key: _KT) -> bool:
         return key in self.__updates or key in self.__registry
 
     def __reduce__(self):
@@ -124,34 +124,40 @@ class Evolver(Base, Generic[KT, VT]):
         try:
             deep_copy = memo[id(self)]
         except KeyError:
-            deep_copy = memo[id(self)] = Evolver.__new__(Evolver)
+            deep_copy = memo[id(self)] = RegistryEvolver.__new__(RegistryEvolver)
             deep_copy_args_a = self.__registry, memo
-            deep_copy.__registry = deepcopy(*deep_copy_args_a)
+            deep_copy.__registry = copy.deepcopy(*deep_copy_args_a)
             deep_copy_args_b = self.__updates, memo
-            deep_copy.__updates = deepcopy(*deep_copy_args_b)
+            deep_copy.__updates = copy.deepcopy(*deep_copy_args_b)
         return deep_copy
 
     def __copy__(self):
         return self.fork()
 
-    def update(self, updates: Mapping[KT, VT]) -> Evolver[KT, VT]:
+    def update(self, updates: Mapping[_KT, _VT]) -> "RegistryEvolver[_KT, _VT]":
         self.__updates = self.__updates.update(updates)
         return self
 
-    def query(self, key: KT) -> VT:
+    def query(self, key: _KT) -> _VT:
         try:
             return self.__updates[key]
         except KeyError:
             return self.__registry.query(key)
 
-    def to_dict(self) -> Dict[KT, VT]:
+    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+        try:
+            return self.query(key)
+        except KeyError:
+            return fallback
+
+    def to_dict(self) -> Dict[_KT, _VT]:
         return self.get_registry().to_dict()
 
-    def get_registry(self) -> Registry[KT, VT]:
+    def get_registry(self) -> Registry[_KT, _VT]:
         return self.__registry.update(self.__updates)
 
-    def fork(self) -> Evolver[KT, VT]:
-        evolver = Evolver.__new__(Evolver)
+    def fork(self) -> "RegistryEvolver[_KT, _VT]":
+        evolver = RegistryEvolver.__new__(RegistryEvolver)
         evolver.__registry = self.__registry
         evolver.__updates = self.__updates
         return evolver
@@ -160,18 +166,18 @@ class Evolver(Base, Generic[KT, VT]):
         return bool(self.__updates)
 
     def reset(self):
-        self.__updates = pmap()
+        self.__updates = pyrsistent.pmap()
 
     def commit(self):
         self.__registry = self.__registry.update(self.__updates)
-        self.__updates = pmap()
+        self.__updates = pyrsistent.pmap()
 
     @property
-    def updates(self) -> PMap[KT, VT]:
+    def updates(self) -> PMap[_KT, _VT]:
         return self.__updates
 
 
-def _evolver_reducer(registry: Registry[KT, VT], updates: Mapping[KT, VT]) -> Evolver:
-    evolver: Evolver[KT, VT] = Evolver(registry)
+def _evolver_reducer(registry: Registry[_KT, _VT], updates: Mapping[_KT, _VT]) -> RegistryEvolver:
+    evolver: RegistryEvolver[_KT, _VT] = RegistryEvolver(registry)
     evolver.update(updates)
     return evolver
