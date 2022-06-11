@@ -25,3 +25,38 @@ Overview
 --------
 `Registtro` provides a weak key/strong value immutable registry data structure.
 Think of it as an immutable `WeakKeyDictionary`.
+
+Example
+-------
+
+.. code:: python
+
+    >>> from registtro import Registry
+    >>> class Entry:
+    ...     pass
+    ...
+    >>> # Initialize registry with 2 entries.
+    >>> entry_a = Entry()
+    >>> entry_b = Entry()
+    >>> registry = Registry({entry_a: 1, entry_b: 2})
+    >>> registry.query(entry_a)
+    1
+    >>> # Update a value and add a new entry, retrieve new registry (immutable).
+    >>> entry_c = Entry()
+    >>> registry = registry.update({entry_a: 10, entry_c: 3})
+    >>> registry.query(entry_a)
+    10
+    >>> registry.query(entry_c)
+    3
+    >>> # Get evolver and perform updates on it (mutable).
+    >>> evolver = registry.get_evolver()
+    >>> evolver.update({entry_b: 20})
+    <registtro._core.RegistryEvolver object at ...>
+    >>> evolver.update({entry_c: 30})
+    <registtro._core.RegistryEvolver object at ...>
+    >>> evolver.query(entry_c)
+    30
+    >>> # Freeze evolver into a registry (immutable).
+    >>> registry = evolver.get_registry()
+    >>> registry.query(entry_c)
+    30
