@@ -69,7 +69,7 @@ class Registry(Generic[_KT, _VT]):
         return self
 
     @staticmethod
-    def __clean(registries: weakref.WeakSet["Registry[_KT, _VT]"], weak_key: weakref.ReferenceType[_KT]) -> None:
+    def __clean(registries: "weakref.WeakSet[Registry[_KT, _VT]]", weak_key: weakref.ReferenceType[_KT]) -> None:
         for registry in registries:
             del registry.__data[weak_key]
 
