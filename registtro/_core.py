@@ -1,7 +1,17 @@
 import functools
 import copy
 import weakref
-from typing import Dict, Optional, Mapping, Generic, TypeVar, Protocol, runtime_checkable, cast, final
+from typing import Dict, Optional, Mapping, Generic, TypeVar, runtime_checkable, cast
+
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
+
+try:
+    from typing import final
+except ImportError:
+    from typing_extensions import final  # type: ignore
 
 import pyrsistent
 from pyrsistent.typing import PMap, PMapEvolver

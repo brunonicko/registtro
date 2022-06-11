@@ -15,7 +15,10 @@ setuptools.setup(
     url="https://github.com/brunonicko/registtro",
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
     package_data={"objetto": ["py.typed", "*.pyi"]},
-    install_requires=[],
+    install_requires=[
+        "pyrsistent",
+        "typing_extensions; python_version < '3.8'",
+    ],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
