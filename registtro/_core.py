@@ -1,7 +1,7 @@
 import functools
 import copy
 import weakref
-from typing import Dict, Optional, Mapping, Generic, TypeVar, cast
+from typing import AbstractSet, Dict, Optional, Mapping, Generic, TypeVar, cast
 
 try:
     from typing import Protocol
@@ -74,7 +74,7 @@ class Registry(Generic[_KT, _VT]):
         return self
 
     @staticmethod
-    def __clean(registries: "weakref.WeakSet[Registry[_KT, _VT]]", weak_key: weakref.ReferenceType[_KT]) -> None:
+    def __clean(registries: AbstractSet["Registry[_KT, _VT]"], weak_key: weakref.ReferenceType[_KT]) -> None:
         for registry in registries:
             del registry.__data[weak_key]
 
