@@ -1,11 +1,4 @@
-import sys
-
 from invoke import task  # type: ignore
-
-
-if sys.version_info[0:2] < (3, 10):
-    sys.stderr.write(f"Python 3.10+ is required for development tasks, you are running {sys.version}\n")
-    sys.exit(1)
 
 
 @task
