@@ -6,14 +6,16 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="registtro",
-    version="0.1.0",
+    version="0.1.1",
     author="Bruno Nicko",
     author_email="brunonicko@gmail.com",
-    description="Enforces usage of '__slots__' for python classes",
+    description="Weak key, strong value immutable registry data structure",
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/brunonicko/registtro",
-    py_modules=["registtro"],
+    packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
+    package_data={"objetto": ["py.typed", "*.pyi"]},
+    install_requires=[],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",

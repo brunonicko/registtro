@@ -19,10 +19,10 @@ class RegistryProtocol(Protocol[_KT, _VT]):
     def update(self, updates: Mapping[_KT, _VT]) -> "RegistryProtocol[_KT, _VT]":
         ...
 
-    def query(self, key: _KT) -> _VT:
+    def query(self, entry: _KT) -> _VT:
         ...
 
-    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+    def get(self, entry: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
         ...
 
     def to_dict(self) -> Dict[_KT, _VT]:
@@ -40,8 +40,8 @@ class Registry(Generic[_KT, _VT]):
         if initial is not None:
             self.__initialize(initial)
 
-    def __contains__(self, key: _KT) -> bool:
-        return weakref.ref(key) in self.__data.persistent()
+    def __contains__(self, entry: _KT) -> bool:
+        return weakref.ref(entry) in self.__data.persistent()
 
     def __reduce__(self):
         return type(self), (self.to_dict(),)
@@ -80,9 +80,9 @@ class Registry(Generic[_KT, _VT]):
 
         # Update weak references.
         weak_updates = {}
-        for key, entry in updates.items():
-            weak_key = weakref.ref(key, functools.partial(Registry.__clean, registries))
-            weak_updates[weak_key] = entry
+        for entry, value in updates.items():
+            weak_key = weakref.ref(entry, functools.partial(Registry.__clean, registries))
+            weak_updates[weak_key] = value
         if not weak_updates:
             return self
 
@@ -98,21 +98,21 @@ class Registry(Generic[_KT, _VT]):
 
         return registry
 
-    def query(self, key: _KT) -> _VT:
-        return self.__data[weakref.ref(key)]
+    def query(self, entry: _KT) -> _VT:
+        return self.__data[weakref.ref(entry)]
 
-    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+    def get(self, entry: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
         try:
-            return self.query(key)
+            return self.query(entry)
         except KeyError:
             return fallback
 
     def to_dict(self) -> Dict[_KT, _VT]:
         to_dict = {}
         for weak_key, data in self.__data.persistent().items():
-            key = weak_key()
-            if key is not None:
-                to_dict[key] = data
+            entry = weak_key()
+            if entry is not None:
+                to_dict[entry] = data
         return to_dict
 
     def get_evolver(self) -> "RegistryEvolver[_KT, _VT]":
@@ -130,8 +130,8 @@ class RegistryEvolver(Generic[_KT, _VT]):
         self.__registry: Registry[_KT, _VT] = registry
         self.__updates: PMap[_KT, _VT] = pyrsistent.pmap()
 
-    def __contains__(self, key: _KT) -> bool:
-        return key in self.__updates or key in self.__registry
+    def __contains__(self, entry: _KT) -> bool:
+        return entry in self.__updates or entry in self.__registry
 
     def __reduce__(self):
         return _evolver_reducer, (self.__registry, self.__updates)
@@ -156,15 +156,15 @@ class RegistryEvolver(Generic[_KT, _VT]):
         self.__updates = self.__updates.update(updates)
         return self
 
-    def query(self, key: _KT) -> _VT:
+    def query(self, entry: _KT) -> _VT:
         try:
-            return self.__updates[key]
+            return self.__updates[entry]
         except KeyError:
-            return self.__registry.query(key)
+            return self.__registry.query(entry)
 
-    def get(self, key: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
+    def get(self, entry: _KT, fallback: Optional[_VT] = None) -> Optional[_VT]:
         try:
-            return self.query(key)
+            return self.query(entry)
         except KeyError:
             return fallback
 
