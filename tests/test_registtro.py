@@ -9,7 +9,12 @@ from registtro import RegistryProtocol, Registry, RegistryEvolver
 
 @pytest.mark.parametrize("cls", (Registry, RegistryEvolver))
 def test_protocol(cls):
-    assert issubclass(cls, RegistryProtocol)
+    try:
+        from typing import runtime_checkable
+    except ImportError:
+        pass
+    else:
+        assert issubclass(cls, RegistryProtocol)
 
     class Entry:
         pass

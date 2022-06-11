@@ -1,7 +1,7 @@
 import functools
 import copy
 import weakref
-from typing import AbstractSet, Dict, Optional, Mapping, Generic, TypeVar, cast
+from typing import Callable, AbstractSet, Dict, Optional, Mapping, Generic, TypeVar, cast
 
 try:
     from typing import Protocol
@@ -16,7 +16,7 @@ except ImportError:
 try:
     from typing import runtime_checkable
 except ImportError:
-    from typing_extensions import runtime_checkable  # type: ignore
+    runtime_checkable = lambda x: x  # type: ignore
 
 import pyrsistent
 from pyrsistent.typing import PMap, PMapEvolver
@@ -24,8 +24,11 @@ from pyrsistent.typing import PMap, PMapEvolver
 __all__ = ["RegistryProtocol", "Registry", "RegistryEvolver"]
 
 
+_T = TypeVar("_T")
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
+
+_ReferenceType = Callable[..., Optional[_T]]
 
 
 @final
@@ -49,9 +52,9 @@ class Registry(Generic[_KT, _VT]):
     __slots__ = ("__weakref__", "__previous", "__registries", "__data")
 
     def __init__(self, initial: Optional[Mapping[_KT, _VT]] = None) -> None:
-        self.__previous: Optional[weakref.ReferenceType[Registry[_KT, _VT]]] = None
+        self.__previous: Optional[_ReferenceType[Registry[_KT, _VT]]] = None
         self.__registries: weakref.WeakSet[Registry[_KT, _VT]] = weakref.WeakSet({self})
-        self.__data = cast(PMapEvolver[weakref.ReferenceType[_KT], _VT], pyrsistent.pmap().evolver())
+        self.__data = cast(PMapEvolver[_ReferenceType[_KT], _VT], pyrsistent.pmap().evolver())
         if initial is not None:
             self.__initialize(initial)
 
@@ -74,7 +77,7 @@ class Registry(Generic[_KT, _VT]):
         return self
 
     @staticmethod
-    def __clean(registries: AbstractSet["Registry[_KT, _VT]"], weak_key: weakref.ReferenceType[_KT]) -> None:
+    def __clean(registries: AbstractSet["Registry[_KT, _VT]"], weak_key: _ReferenceType[_KT]) -> None:
         for registry in registries:
             del registry.__data[weak_key]
 
