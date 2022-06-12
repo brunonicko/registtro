@@ -137,10 +137,10 @@ def test_deep_copy_and_pickle_registry(deep_copier):
     entry_b = _Entry("b")
     entry_c = _Entry("c")
     entry_d = _Entry("d")
-    entryects = entry_a, entry_b, entry_c
+    entries = entry_a, entry_b, entry_c
     registry = Registry({entry_a: 1, entry_b: 2, entry_c: 3, entry_d: 4})
 
-    copied_entryects, copied_registry = deep_copier((entryects, registry))
+    copied_entries, copied_registry = deep_copier((entries, registry))
     truth_dict = registry.to_dict()
     del truth_dict[entry_d]
     assert copied_registry.to_dict() == truth_dict
@@ -166,10 +166,10 @@ def test_deep_copy_and_pickle_evolver(deep_copier):
     entry_b = _Entry("b")
     entry_c = _Entry("c")
     entry_d = _Entry("d")
-    entryects = (entry_a,)
+    entries = (entry_a,)
     evolver = Registry({entry_a: 1, entry_d: 4}).get_evolver().update({entry_b: 2, entry_c: 3})
 
-    copied_entryects, copied_evolver = deep_copier((entryects, evolver))
+    copied_entries, copied_evolver = deep_copier((entries, evolver))
     assert len(copied_evolver.to_dict()) == 3
     truth_dict = evolver.to_dict()
     del truth_dict[entry_d]
