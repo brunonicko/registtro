@@ -6,19 +6,16 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="registtro",
-    version="0.1.1",
+    version="0.2.1",
     author="Bruno Nicko",
     author_email="brunonicko@gmail.com",
-    description="Weak key, strong value immutable registry data structure",
+    description="Weak entry, strong value immutable registry data structure",
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/brunonicko/registtro",
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
-    package_data={"objetto": ["py.typed", "*.pyi"]},
-    install_requires=[
-        "pyrsistent",
-        "typing_extensions; python_version < '3.8'",
-    ],
+    package_data={"registtro": ["py.typed", "*.pyi"]},
+    install_requires=["tippo", "pyrsistent"],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",

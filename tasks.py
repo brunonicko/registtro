@@ -48,3 +48,4 @@ def checks(c):
     lint(c)
     mypy(c)
     tox(c)
+    docs(c)

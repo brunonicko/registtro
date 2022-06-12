@@ -23,7 +23,7 @@ Registtro
 
 Overview
 --------
-`Registtro` provides a weak key/strong value immutable registry data structure.
+`Registtro` provides a weak entry, strong value immutable registry data structure.
 Think of it as an immutable `WeakKeyDictionary`.
 
 Example
@@ -51,9 +51,9 @@ Example
     >>> # Get evolver and perform updates on it (mutable).
     >>> evolver = registry.get_evolver()
     >>> evolver.update({entry_b: 20})
-    <registtro._core.RegistryEvolver object at ...>
+    <registtro.RegistryEvolver object at ...>
     >>> evolver.update({entry_c: 30})
-    <registtro._core.RegistryEvolver object at ...>
+    <registtro.RegistryEvolver object at ...>
     >>> evolver.query(entry_c)
     30
     >>> # Freeze evolver into a registry (immutable).
