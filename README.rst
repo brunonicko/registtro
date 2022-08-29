@@ -51,9 +51,9 @@ Example
     >>> # Get evolver and perform updates on it (mutable).
     >>> evolver = registry.get_evolver()
     >>> evolver.update({entry_b: 20})
-    <registtro.RegistryEvolver object at ...>
+    <registtro._registry.RegistryEvolver object at ...>
     >>> evolver.update({entry_c: 30})
-    <registtro.RegistryEvolver object at ...>
+    <registtro._registry.RegistryEvolver object at ...>
     >>> evolver.query(entry_c)
     30
     >>> # Freeze evolver into a registry (immutable).
