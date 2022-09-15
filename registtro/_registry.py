@@ -3,7 +3,8 @@ import functools
 
 import six
 import pyrsistent
-from tippo import AbstractSet, Dict, Union, Generic, TypeVar, Mapping, WeakSet, final, cast, ref
+from tippo import AbstractSet, Dict, Union, Generic, TypeVar, Mapping, WeakSet, cast, ref
+from basicco import runtime_final, generic_meta
 from pyrsistent.typing import PMap, PMapEvolver
 
 from ._exceptions import EntryNotFoundError
@@ -14,8 +15,12 @@ _VT = TypeVar("_VT")
 _ST = TypeVar("_ST")
 
 
-@final
-class Registry(Generic[_ET, _VT]):
+class _RegistryMeta(runtime_final.FinalizedMeta, generic_meta.GenericMeta):
+    pass
+
+
+@runtime_final.final
+class Registry(six.with_metaclass(_RegistryMeta, Generic[_ET, _VT])):
     """Immutable weak entry/strong value registry."""
 
     __slots__ = ("__weakref__", "__previous", "__registries", "__data")
@@ -129,8 +134,8 @@ class Registry(Generic[_ET, _VT]):
         return RegistryEvolver(self)
 
 
-@final
-class RegistryEvolver(Generic[_ET, _VT]):
+@runtime_final.final
+class RegistryEvolver(six.with_metaclass(_RegistryMeta, Generic[_ET, _VT])):
     """Mutable registry evolver."""
 
     __slots__ = ("__weakref__", "__registry", "__updates")
