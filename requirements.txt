@@ -1,4 +1,4 @@
-basicco
-tippo
+basicco>=8,<9
+tippo>=3,<4
 pyrsistent
 six

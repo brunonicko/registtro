@@ -1,5 +1,4 @@
-from tippo import Dict, Union, Protocol, TypeVar, Mapping, runtime_checkable
-
+from tippo import Dict, Mapping, Protocol, TypeVar, Union, runtime_checkable
 
 _ET = TypeVar("_ET")
 _VT = TypeVar("_VT")

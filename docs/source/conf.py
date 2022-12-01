@@ -1,3 +1,5 @@
+# type: ignore
+
 import os
 import sys
 
@@ -7,7 +9,7 @@ sys.path.insert(0, root_path)
 
 # Project information.
 project = "Registtro"
-copyright = "2022, Bruno Nicko"
+copyright = "2022, Bruno Nicko"  # noqa
 author = "Bruno Nicko"
 
 # Sphinx extensions.
@@ -20,14 +22,22 @@ extensions = [
 
 # Intersphinx configuration.
 intersphinx_mapping = {
+    "pyrsistent": ("https://pyrsistent.readthedocs.io/en/stable/", None),
+    "python": ("https://docs.python.org/3.11", None),
+    "six": ("https://six.readthedocs.io/", None),
+    "basicco": ("https://basicco.readthedocs.io/en/stable/", None),
     "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
-    "python": ("https://docs.python.org/3.10", None),
+    "tippo": ("https://tippo.readthedocs.io/en/stable/", None),
 }
 
 # Autodoc configuration.
 autoclass_content = "class"
 autodoc_typehints = "description"
 autodoc_member_order = "bysource"
+autodoc_default_options = {
+    "members": True,
+    "show-inheritance": True,
+}
 
 # Templates' paths.
 templates_path = ["_templates"]
@@ -50,5 +60,8 @@ pygments_style = "monokai"
 
 # HTML options.
 html_theme = "sphinx_rtd_theme"
-html_theme_options = {}
+html_theme_options = {
+    "style_external_links": False,
+    "style_nav_header_background": "#BD0000",
+}
 html_static_path = ["_static"]

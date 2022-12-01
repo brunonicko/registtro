@@ -1,29 +1,34 @@
 import copy
 import functools
 
-import six
 import pyrsistent
-from tippo import AbstractSet, Dict, Union, Generic, TypeVar, Mapping, WeakSet, cast, ref
-from basicco import runtime_final, generic_meta
+import six
+from basicco import SlottedBase, runtime_final
 from pyrsistent.typing import PMap, PMapEvolver
+from tippo import (
+    AbstractSet,
+    Dict,
+    Generic,
+    Mapping,
+    TypeVar,
+    Union,
+    WeakSet,
+    cast,
+    ref,
+)
 
 from ._exceptions import EntryNotFoundError
-
 
 _ET = TypeVar("_ET")
 _VT = TypeVar("_VT")
 _ST = TypeVar("_ST")
 
 
-class _RegistryMeta(runtime_final.FinalizedMeta, generic_meta.GenericMeta):
-    pass
-
-
 @runtime_final.final
-class Registry(six.with_metaclass(_RegistryMeta, Generic[_ET, _VT])):
+class Registry(SlottedBase, Generic[_ET, _VT]):
     """Immutable weak entry/strong value registry."""
 
-    __slots__ = ("__weakref__", "__previous", "__registries", "__data")
+    __slots__ = ("__previous", "__registries", "__data")
 
     def __init__(self, initial=None):
         # type: (Union[Mapping[_ET, _VT], None]) -> None
@@ -135,10 +140,10 @@ class Registry(six.with_metaclass(_RegistryMeta, Generic[_ET, _VT])):
 
 
 @runtime_final.final
-class RegistryEvolver(six.with_metaclass(_RegistryMeta, Generic[_ET, _VT])):
+class RegistryEvolver(SlottedBase, Generic[_ET, _VT]):
     """Mutable registry evolver."""
 
-    __slots__ = ("__weakref__", "__registry", "__updates")
+    __slots__ = ("__registry", "__updates")
 
     def __init__(self, registry=None):
         # type: (Union[Registry, None]) -> None

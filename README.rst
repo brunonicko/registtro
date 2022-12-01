@@ -1,5 +1,18 @@
-Registtro
-=========
+.. logo_start
+.. raw:: html
+
+   <p align="center">
+     <a href="https://github.com/brunonicko/registtro">
+         <picture>
+            <object data="./_static/registtro.svg" type="image/png">
+                <source srcset="./docs/source/_static/registtro_white.svg" media="(prefers-color-scheme: dark)">
+                <img src="./docs/source/_static/registtro.svg" width="60%" alt="registtro" />
+            </object>
+         </picture>
+     </a>
+   </p>
+.. logo_end
+
 .. image:: https://github.com/brunonicko/registtro/workflows/MyPy/badge.svg
    :target: https://github.com/brunonicko/registtro/actions?query=workflow%3AMyPy
 
@@ -51,9 +64,9 @@ Example
     >>> # Get evolver and perform updates on it (mutable).
     >>> evolver = registry.get_evolver()
     >>> evolver.update({entry_b: 20})
-    <registtro._registry.RegistryEvolver object at ...>
+    <registtro._registry.RegistryEvolver ...>
     >>> evolver.update({entry_c: 30})
-    <registtro._registry.RegistryEvolver object at ...>
+    <registtro._registry.RegistryEvolver ...>
     >>> evolver.query(entry_c)
     30
     >>> # Freeze evolver into a registry (immutable).
