@@ -1,10 +1,10 @@
-import pickle
 import copy
 import gc
+import pickle
 
 import pytest
 
-from registtro import RegistryProtocol, Registry, RegistryEvolver
+from registtro import Registry, RegistryEvolver, RegistryProtocol
 
 
 @pytest.mark.parametrize("cls", (Registry, RegistryEvolver))
