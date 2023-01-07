@@ -35,6 +35,12 @@ def test_protocol(cls):
     assert self.to_dict() == {entry_a: 1, entry_b: 2}
 
 
+def test_static_protocol():
+    # type: () -> None
+    _reg_a = Registry()  # type: RegistryProtocol  # noqa
+    _reg_b = RegistryEvolver()  # type: RegistryProtocol  # noqa
+
+
 def test_registry_garbage_collection():
     class Entry:
         pass
