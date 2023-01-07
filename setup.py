@@ -24,7 +24,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="registtro",
-    version="1.2.0",
+    version="1.3.0",
     author="Bruno Nicko",
     author_email="brunonicko@gmail.com",
     description="Weak entry, strong value immutable registry data structure.",

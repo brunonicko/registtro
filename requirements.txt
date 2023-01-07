@@ -1,4 +1,4 @@
 basicco>=8,<9
 tippo>=3,<4
-pyrsistent
+pyrsistent>=0,<1
 six
