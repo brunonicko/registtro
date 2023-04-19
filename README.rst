@@ -5,8 +5,15 @@
      <a href="https://github.com/brunonicko/registtro">
          <picture>
             <object data="./_static/registtro.svg" type="image/png">
-                <source srcset="./docs/source/_static/registtro_white.svg" media="(prefers-color-scheme: dark)">
-                <img src="./docs/source/_static/registtro.svg" width="60%" alt="registtro" />
+                <source
+                    srcset="./docs/source/_static/registtro_white.svg"
+                    media="(prefers-color-scheme: dark)"
+                />
+                <img
+                    src="./docs/source/_static/registtro.svg"
+                    width="60%"
+                    alt="registtro"
+                />
             </object>
          </picture>
      </a>
@@ -36,16 +43,20 @@
 
 Overview
 --------
-Weak entry, strong value immutable registry data structure. Think of it as an immutable `WeakKeyDictionary`.
+Weak entry, strong value immutable registry data structure.
+Think of it as an immutable `WeakKeyDictionary` that efficiently evolves into a new
+copy everytime you want to make a change to it.
 
 Motivation
 ----------
-Immutable data structures are great for when you need to implement some kind of "snapshot" of states for easy undo/redo,
-time-travelling functionality. The library `pyrsistent <https://pypi.org/project/pyrsistent/>`_ is great for that, but
+Immutable data structures are great for when you need to implement some kind of
+"snapshot" of states for easy undo/redo, time-travelling functionality.
+The library `pyrsistent <https://pypi.org/project/pyrsistent/>`_ is great for that, but
 it lacks a map-like structure in which the keys are stored as weak references.
 
-`Registtro` is an implementation of that structure, which allows for proper garbage collection of the keys/entries,
-while still allowing to store their states in a centralized, immutable structure.
+`Registtro` is an implementation of that structure, which allows for proper garbage
+collection of the keys/entries, while still allowing to store their states in a
+centralized, immutable structure.
 
 Example
 -------
