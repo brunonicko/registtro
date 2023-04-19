@@ -1,4 +1,4 @@
-basicco>=8,<9
-tippo>=3,<4
+basicco>=10.1.2,<11
+tippo>=4,<5
 pyrsistent>=0,<1
 six

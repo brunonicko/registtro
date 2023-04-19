@@ -123,7 +123,9 @@ def test_registry_evolver_roundtrip():
     assert new_registry.to_dict() == {entry_a: 1, entry_b: 2, entry_c: 3}
 
 
-@pytest.mark.parametrize("deep_copier", (copy.deepcopy, lambda s: pickle.loads(pickle.dumps(s))))
+@pytest.mark.parametrize(
+    "deep_copier", (copy.deepcopy, lambda s: pickle.loads(pickle.dumps(s)))
+)
 def test_deep_copy_and_pickle_registry(deep_copier):
     class _Entry:
         __name__ = __qualname__ = "_Entry"
@@ -152,7 +154,9 @@ def test_deep_copy_and_pickle_registry(deep_copier):
     assert copied_registry.to_dict() == truth_dict
 
 
-@pytest.mark.parametrize("deep_copier", (copy.deepcopy, lambda s: pickle.loads(pickle.dumps(s))))
+@pytest.mark.parametrize(
+    "deep_copier", (copy.deepcopy, lambda s: pickle.loads(pickle.dumps(s)))
+)
 def test_deep_copy_and_pickle_evolver(deep_copier):
     class _Entry:
         __name__ = __qualname__ = "_Entry"
@@ -173,7 +177,11 @@ def test_deep_copy_and_pickle_evolver(deep_copier):
     entry_c = _Entry("c")
     entry_d = _Entry("d")
     entries = (entry_a,)
-    evolver = Registry({entry_a: 1, entry_d: 4}).get_evolver().update({entry_b: 2, entry_c: 3})
+    evolver = (
+        Registry({entry_a: 1, entry_d: 4})
+        .get_evolver()
+        .update({entry_b: 2, entry_c: 3})
+    )
 
     copied_entries, copied_evolver = deep_copier((entries, evolver))
     assert len(copied_evolver.to_dict()) == 3

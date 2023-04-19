@@ -1,5 +1,6 @@
 import copy
 import functools
+from weakref import WeakSet, ref
 
 import pyrsistent
 import six
@@ -7,14 +8,16 @@ from basicco import SlottedBase, runtime_final
 from pyrsistent.typing import PMap, PMapEvolver
 from tippo import (
     AbstractSet,
+    Any,
+    Callable,
     Dict,
     Generic,
     Mapping,
+    Tuple,
+    Type,
     TypeVar,
     Union,
-    WeakSet,
     cast,
-    ref,
 )
 
 from ._exceptions import EntryNotFoundError
@@ -34,7 +37,7 @@ class Registry(SlottedBase, Generic[_ET, _VT]):
         # type: (Union[Mapping[_ET, _VT], None]) -> None
         self.__previous = None  # type: Union[ref[Registry[_ET, _VT]], None]
         self.__registries = WeakSet({self})  # type: WeakSet[Registry[_ET, _VT]]
-        self.__data = cast(PMapEvolver[ref[_ET], _VT], pyrsistent.pmap().evolver())
+        self.__data = cast("PMapEvolver[ref[_ET], _VT]", pyrsistent.pmap().evolver())
         if initial is not None:
             self.__initialize(initial)
 
@@ -43,18 +46,21 @@ class Registry(SlottedBase, Generic[_ET, _VT]):
         return ref(entry) in self.__data.persistent()
 
     def __reduce__(self):
+        # type: () -> Tuple[Type[Registry[_ET, _VT]], Tuple[Dict[_ET, _VT]]]
         return type(self), (self.to_dict(),)
 
     def __deepcopy__(self, memo=None):
+        # type: (Union[Dict[int, Any], None]) -> Registry[_ET, _VT]
         if memo is None:
             memo = {}
         try:
             deep_copy = memo[id(self)]
         except KeyError:
             deep_copy = memo[id(self)] = Registry(copy.deepcopy(self.to_dict(), memo))
-        return deep_copy
+        return cast(Registry[_ET, _VT], deep_copy)
 
     def __copy__(self):
+        # type: () -> Registry[_ET, _VT]
         return self
 
     @staticmethod
@@ -146,7 +152,7 @@ class RegistryEvolver(SlottedBase, Generic[_ET, _VT]):
     __slots__ = ("__registry", "__updates")
 
     def __init__(self, registry=None):
-        # type: (Union[Registry, None]) -> None
+        # type: (Union[Registry[_ET, _VT], None]) -> None
         if registry is None:
             registry = Registry()
         self.__registry = registry  # type: Registry[_ET, _VT]
@@ -157,9 +163,11 @@ class RegistryEvolver(SlottedBase, Generic[_ET, _VT]):
         return entry in self.__updates or entry in self.__registry
 
     def __reduce__(self):
+        # type: () -> Tuple[_EvolverReducer[_ET, _VT], _EvolverReducerArgs[_ET, _VT]]
         return _evolver_reducer, (self.__registry, self.__updates)
 
     def __deepcopy__(self, memo=None):
+        # type: (Union[Dict[int, Any], None]) -> RegistryEvolver[_ET, _VT]
         if memo is None:
             memo = {}
         try:
@@ -170,9 +178,10 @@ class RegistryEvolver(SlottedBase, Generic[_ET, _VT]):
             deep_copy.__registry = copy.deepcopy(*deep_copy_args_a)
             deep_copy_args_b = self.__updates, memo
             deep_copy.__updates = copy.deepcopy(*deep_copy_args_b)
-        return deep_copy
+        return cast(RegistryEvolver[_ET, _VT], deep_copy)
 
     def __copy__(self):
+        # type: () -> RegistryEvolver[_ET, _VT]
         return self.fork()
 
     def update(self, updates):
@@ -230,10 +239,12 @@ class RegistryEvolver(SlottedBase, Generic[_ET, _VT]):
         return bool(self.__updates)
 
     def reset(self):
+        # type: () -> None
         """Reset updates to last commit."""
         self.__updates = pyrsistent.pmap()
 
     def commit(self):
+        # type: () -> None
         """Commit updates."""
         self.__registry = self.__registry.update(self.__updates)
         self.__updates = pyrsistent.pmap()
@@ -250,3 +261,9 @@ def _evolver_reducer(registry, updates):
     evolver = RegistryEvolver(registry)  # type: RegistryEvolver[_ET, _VT]
     evolver.update(updates)
     return evolver
+
+
+_EvolverReducer = Callable[
+    [Registry[_ET, _VT], Mapping[_ET, _VT]], RegistryEvolver[_ET, _VT]
+]
+_EvolverReducerArgs = Tuple[Registry[_ET, _VT], Mapping[_ET, _VT]]
